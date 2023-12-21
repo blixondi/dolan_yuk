@@ -17,6 +17,9 @@ dev_dependencies:
   percent_indicator: ^4.2.2
   shared_preferences: ^2.0.15
   http: ^1.1.0
+  email_validator: ^2.1.16
+
+  
 
 flutter:
   uses-material-design: true

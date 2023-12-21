@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:dolan_yuk/screen/cari.dart';
 import 'package:dolan_yuk/screen/jadwal.dart';
 import 'package:dolan_yuk/screen/profiles.dart';
@@ -57,7 +59,14 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
   final List<Widget> _screen = [Jadwal(), Cari(), Profiles()];
-  final List<String> _title = ['Jadwal', 'Cari', 'Profil'];
+
+  void doLogout() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove("email");
+    prefs.remove("user_id");
+    prefs.remove("full_name");
+    main();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,8 +82,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     backgroundImage:
                         NetworkImage("https://i.pravatar.cc/150"))),
             ListTile(
-              title: new Text("Jadwal"),
-              leading: new Icon(Icons.calendar_month_rounded),
+              title: Text("Jadwal"),
+              leading: Icon(Icons.calendar_month_rounded),
               onTap: () {
                 setState(() {
                   _currentIndex = 0;
@@ -83,8 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              title: new Text("Cari"),
-              leading: new Icon(Icons.search),
+              title: Text("Cari"),
+              leading: Icon(Icons.search),
               onTap: () {
                 setState(() {
                   _currentIndex = 1;
@@ -93,8 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              title: new Text("Profil"),
-              leading: new Icon(Icons.person),
+              title: Text("Profil"),
+              leading: Icon(Icons.person),
               onTap: () {
                 setState(() {
                   _currentIndex = 2;
@@ -103,10 +112,10 @@ class _MyHomePageState extends State<MyHomePage> {
               },
             ),
             ListTile(
-              title: new Text("Logout"),
-              leading: new Icon(Icons.logout),
+              title: Text("Logout"),
+              leading: Icon(Icons.logout),
               onTap: () {
-                // Navigator.popAndPushNamed(context, "basket");
+                doLogout();
               },
             ),
           ],
@@ -117,16 +126,11 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: ourDrawer(),
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        title: Center(
-          child: Text(_title[_currentIndex]),
-        ),
-      ),
+      appBar: AppBar(backgroundColor: Colors.red, title: Text("DolanYuk")),
       body: _screen[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        fixedColor: Colors.blue,
+        fixedColor: Colors.deepOrange,
         items: const [
           BottomNavigationBarItem(
             label: "Jadwal",

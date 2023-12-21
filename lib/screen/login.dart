@@ -1,10 +1,9 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, sized_box_for_whitespace
 
-// part of 'package:dolan_yuk/imports.dart';
-
 import 'dart:convert';
 
 import 'package:dolan_yuk/main.dart';
+import 'package:dolan_yuk/screen/signup.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -48,9 +47,10 @@ class _LoginState extends State<Login> {
         final prefs = await SharedPreferences.getInstance();
         prefs.setString("email", email);
         prefs.setString("full_name", json['full_name']);
-        if (json['image'] != '') {
-          prefs.setString("image", json['image']);
-        }
+        prefs.setInt("user_id", json['id']);
+        // if (json['image'] != '') {
+        //   prefs.setString("image", json['image']);
+        // }
         main();
       } else {
         setState(() {
@@ -122,7 +122,12 @@ class _LoginState extends State<Login> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           OutlinedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Signup()));
+                              },
                               child: Text(
                                 'Sign Up',
                               )),
