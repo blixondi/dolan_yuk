@@ -9,22 +9,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dolan_yuk/screen/login.dart';
 
 String activeUser = "";
+String activeEmail = "";
+String activePhoto = "";
+int activeUserId = 0;
 
 GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-Future<String> checkUser() async {
+Future<Map<String, dynamic>> getUserData() async {
   final prefs = await SharedPreferences.getInstance();
   String full_name = prefs.getString("full_name") ?? '';
-  return full_name;
+  String email = prefs.getString("email") ?? '';
+  int user_id = prefs.getInt("user_id") ?? 0;
+  return {'full_name': full_name, 'email': email, 'user_id': user_id};
 }
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  checkUser().then((String result) {
-    if (result == '') {
+  getUserData().then((Map<String, dynamic> result) {
+    if (result['full_name'] == '') {
       runApp(MyLogin());
     } else {
-      activeUser = result;
+      activeUser = result['full_name'];
+      activeEmail = result['email'];
+      activeUserId = result['user_id'];
       runApp(const MainApp());
     }
   });
@@ -76,8 +83,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: <Widget>[
             UserAccountsDrawerHeader(
-                accountName: Text("ini testing lo"),
-                accountEmail: Text("testing saja lo"),
+                accountName: Text(activeUser),
+                accountEmail: Text(activeEmail),
                 currentAccountPicture: CircleAvatar(
                     backgroundImage:
                         NetworkImage("https://i.pravatar.cc/150"))),
@@ -124,6 +131,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: Icon(Icons.edit),
+        backgroundColor: Colors.deepOrange,
+      ),
       key: _scaffoldKey,
       drawer: ourDrawer(),
       appBar: AppBar(backgroundColor: Colors.red, title: Text("DolanYuk")),
