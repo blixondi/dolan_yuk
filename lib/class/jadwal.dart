@@ -21,4 +21,4 @@ class Jadwal {
   }
 }
 
-List<Jadwal> jadwals = [];
+//List<Jadwal> jadwals = [];

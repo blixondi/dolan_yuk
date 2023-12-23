@@ -20,7 +20,13 @@ Future<Map<String, dynamic>> getUserData() async {
   String full_name = prefs.getString("full_name") ?? '';
   String email = prefs.getString("email") ?? '';
   int user_id = prefs.getInt("user_id") ?? 0;
-  return {'full_name': full_name, 'email': email, 'user_id': user_id};
+  String image = prefs.getString("user_image") ?? '';
+  return {
+    'full_name': full_name,
+    'email': email,
+    'user_id': user_id,
+    'image': image
+  };
 }
 
 void main() {
@@ -32,6 +38,7 @@ void main() {
       activeUser = result['full_name'];
       activeEmail = result['email'];
       activeUserId = result['user_id'];
+      activePhoto = result['image'];
       runApp(const MainApp());
     }
   });
@@ -50,6 +57,7 @@ class MainApp extends StatelessWidget {
       },
       title: 'Dolan Yuk',
       home: const MyHomePage(title: 'Dolan Yuk'),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -85,9 +93,8 @@ class _MyHomePageState extends State<MyHomePage> {
             UserAccountsDrawerHeader(
                 accountName: Text(activeUser),
                 accountEmail: Text(activeEmail),
-                currentAccountPicture: CircleAvatar(
-                    backgroundImage:
-                        NetworkImage("https://i.pravatar.cc/150"))),
+                currentAccountPicture:
+                    CircleAvatar(backgroundImage: NetworkImage(activePhoto))),
             ListTile(
               title: Text("Jadwal"),
               leading: Icon(Icons.calendar_month_rounded),
@@ -131,11 +138,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.edit),
-        backgroundColor: Colors.deepOrange,
-      ),
       key: _scaffoldKey,
       drawer: ourDrawer(),
       appBar: AppBar(backgroundColor: Colors.red, title: Text("DolanYuk")),

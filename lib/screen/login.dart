@@ -48,9 +48,7 @@ class _LoginState extends State<Login> {
         prefs.setString("email", email);
         prefs.setString("full_name", json['full_name']);
         prefs.setInt("user_id", json['id']);
-        // if (json['image'] != '') {
-        //   prefs.setString("image", json['image']);
-        // }
+        prefs.setString("user_image", json['image']);
         main();
       } else {
         setState(() {
