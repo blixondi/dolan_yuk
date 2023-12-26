@@ -51,7 +51,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       routes: {
-        'jadwal': (context) => Jadwal(),
+        'jadwal': (context) => Jadwal_Screen(),
         'cari': (context) => Cari(),
         'profil': (context) => Profiles(),
       },
@@ -73,7 +73,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
-  final List<Widget> _screen = [Jadwal(), Cari(), Profiles()];
+  final List<Widget> _screen = [Jadwal_Screen(), Cari(), Profiles()];
 
   void doLogout() async {
     final prefs = await SharedPreferences.getInstance();

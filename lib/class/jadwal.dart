@@ -1,24 +1,37 @@
 class Jadwal {
   int id;
-  int dolanan_id;
+  String nama;
   String tanggal;
   String jam;
   String lokasi;
+  String alamat;
+  String gambar;
+  int minimalMember;
+  int currentMember;
 
-  Jadwal(
-      {required this.id,
-      required this.dolanan_id,
-      required this.tanggal,
-      required this.jam,
-      required this.lokasi});
+  Jadwal({
+    required this.id,
+    required this.nama,
+    required this.tanggal,
+    required this.jam,
+    required this.lokasi,
+    required this.alamat,
+    required this.gambar,
+    required this.minimalMember,
+    required this.currentMember,
+  });
+
   factory Jadwal.fromJson(Map<String, dynamic> json) {
     return Jadwal(
-        id: json['id'] as int,
-        dolanan_id: json['dolanan_id'] as int,
-        tanggal: json['tanggal'] as String,
-        jam: json['jam'] as String,
-        lokasi: json['lokasi'] as String);
+      id: json['id'] as int,
+      nama: json['nama'] as String,
+      tanggal: json['tanggal'] as String,
+      jam: json['jam'] as String,
+      lokasi: json['lokasi'] as String,
+      alamat: json['alamat'] as String,
+      gambar: json['gambar'] as String,
+      minimalMember: int.parse(json['minimal_member'].toString()),
+      currentMember: int.parse(json['currentMember'].toString()),
+    );
   }
 }
-
-//List<Jadwal> jadwals = [];

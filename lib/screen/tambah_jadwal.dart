@@ -245,21 +245,25 @@ class TambahJadwalState extends State<TambahJadwal> {
             ),
             Padding(
                 padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
-                child: dolanans.isEmpty
-                    ? CircularProgressIndicator()
-                    : DropdownMenu(
-                        label: Text('Dolan Utama'),
-                        initialSelection: dolanans.first.id,
-                        onSelected: (value) {
-                          setState(() {
-                            selectedDolanan = value!;
-                            setValues(value);
-                          });
-                        },
-                        dropdownMenuEntries: dolanans.map((e) {
-                          return DropdownMenuEntry(value: e.id, label: e.nama);
-                        }).toList(),
-                      )),
+                child: Container(
+                  
+                  child: dolanans.isEmpty
+                      ? CircularProgressIndicator()
+                      : DropdownMenu(
+                          label: Text('Dolan Utama'),
+                          initialSelection: dolanans.first.id,
+                          onSelected: (value) {
+                            setState(() {
+                              selectedDolanan = value!;
+                              setValues(value);
+                            });
+                          },
+                          dropdownMenuEntries: dolanans.map((e) {
+                            return DropdownMenuEntry(
+                                value: e.id, label: e.nama);
+                          }).toList(),
+                        ),
+                )),
             Padding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
               child: TextFormField(
