@@ -1,4 +1,12 @@
+import 'package:dolan_yuk/class/jadwal.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:convert';
+
+import 'package:dolan_yuk/class/member.dart';
+import 'package:dolan_yuk/screen/tambah_jadwal.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Cari extends StatefulWidget {
   @override
@@ -6,17 +14,223 @@ class Cari extends StatefulWidget {
 }
 
 class _CariState extends State<Cari> {
+  List<Jadwal> jadwals = [];
+  int user_id = 0;
+  String temp = "";
+
   @override
   void initState() {
     super.initState();
+    getUserId();
+    bacaData();
+  }
+
+  void getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      user_id = prefs.getInt("user_id") ?? 0;
+    });
+  }
+
+  Future<String> fetchData() async {
+    final response = await http.post(
+        Uri.parse(
+            "https://ubaya.me/flutter/160420033/dolanyuk_api/cari_jadwal.php"),
+        body: {'user_id': user_id.toString()});
+    if (response.statusCode == 200) {
+      return response.body;
+    } else {
+      throw Exception('Failed to read API');
+    }
+  }
+
+  bacaData() {
+    jadwals.clear();
+    Future<String> data = fetchData();
+    data.then((value) {
+      Map json = jsonDecode(value);
+      for (var j in json['data']) {
+        Jadwal jad = Jadwal.fromJson(j);
+        jadwals.add(jad);
+      }
+      setState(() {
+        temp = jadwals[0].nama;
+      });
+    });
+  }
+
+  Widget listJadwal(jadwals) {
+    if (jadwals.isNotEmpty) {
+      return ListView.builder(
+          itemCount: jadwals.length,
+          itemBuilder: (BuildContext cxt, int index) {
+            return Card(
+                child: Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Container(
+                    child: Image.network(jadwals[index].gambar),
+                  ),
+                  Text(jadwals[index].nama),
+                  Text(jadwals[index].tanggal),
+                  Text(jadwals[index].jam),
+                  OutlinedButton(
+                    onPressed: () {
+                      showMember(jadwals[index].id);
+                    },
+                    child:
+                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+                      Icon(Icons.person),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                          "${jadwals[index].currentMember} / ${jadwals[index].minimalMember} orang")
+                    ]),
+                  ),
+                  Text(jadwals[index].lokasi),
+                  Text(jadwals[index].alamat),
+                  ElevatedButton(
+                      onPressed: () {},
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[Icon(Icons.login), Text('Join')],
+                      ))
+                ],
+              ),
+            ));
+          });
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 5),
+            child: Center(
+              child: Text('Jadwal main masih kosong nih'),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 5),
+            child: Center(
+              child: Text('Cari konco main atau bikin jadwal baru aja'),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  //list di dalam dialog
+  Widget dialogList(List<Member> members) {
+    var extra = "";
+    return Container(
+      width: double.maxFinite,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: members.length,
+        itemBuilder: (BuildContext context, int index) {
+          if (members[index].id == user_id) {
+            extra = " (YOU)";
+          } else {
+            extra = "";
+          }
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(members[index].image),
+            ),
+            title: Text(members[index].nama + extra),
+            subtitle: Text(members[index].role),
+          );
+        },
+      ),
+    );
+  }
+
+  //Dialog untuk show member
+  void showMember(int id_jadwal) {
+    getMember(id_jadwal).then((members) {
+      if (members.isNotEmpty) {
+        showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text("List Member"),
+            content: dialogList(members),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Keren'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        print('Members empty');
+      }
+    });
+  }
+
+  //get member
+  Future<List<Member>> getMember(int id_jadwal) async {
+    List<Member> members = [];
+    final response = await http.post(
+      Uri.parse(
+          "https://ubaya.me/flutter/160420033/dolanyuk_api/member_jadwal.php"),
+      body: {'id_jadwal': id_jadwal.toString()},
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> json = jsonDecode(response.body);
+      List<dynamic> data = json['data'];
+      members = data.map((item) => Member.fromJson(item)).toList();
+      return members;
+    } else {
+      throw Exception('Failed to read API');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Cari'),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => TambahJadwal()));
+          },
+          child: Icon(Icons.edit),
+          backgroundColor: Colors.deepOrange,
         ),
-        body: Center(child: Text("Cari")));
+        body: Column(children: [
+          Padding(
+              padding: EdgeInsets.all(10),
+              child: TextField(
+                decoration: InputDecoration(
+                    hintText: 'Cari Dolanan...',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0))),
+                onChanged: (v) {
+                  setState(() {
+                    jadwals = [];
+                  });
+                },
+              )),
+          Expanded(
+            child: jadwals.isEmpty
+                ? Center(
+                    child: listJadwal(jadwals),
+                  )
+                : Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        child: listJadwal(jadwals)),
+                  ),
+          )
+        ]));
   }
 }
