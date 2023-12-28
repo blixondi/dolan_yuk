@@ -17,15 +17,22 @@ class _CariState extends State<Cari> {
   List<Jadwal> jadwals = [];
   int user_id = 0;
   String temp = "";
+  String cari = "";
 
   @override
   void initState() {
     super.initState();
-    getUserId();
-    bacaData();
+    // getUserId();
+    // bacaData();
+    fetchDataAndPopulateJadwals();
   }
 
-  void getUserId() async {
+  fetchDataAndPopulateJadwals() async {
+    await getUserId(); // Wait for user ID retrieval
+    await bacaData(); // Fetch data and populate jadwals list
+  }
+
+  getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       user_id = prefs.getInt("user_id") ?? 0;
@@ -36,7 +43,7 @@ class _CariState extends State<Cari> {
     final response = await http.post(
         Uri.parse(
             "https://ubaya.me/flutter/160420033/dolanyuk_api/cari_jadwal.php"),
-        body: {'user_id': user_id.toString()});
+        body: {'user_id': user_id.toString(), 'cari' : cari});
     if (response.statusCode == 200) {
       return response.body;
     } else {
@@ -44,19 +51,22 @@ class _CariState extends State<Cari> {
     }
   }
 
-  bacaData() {
+  bacaData() async {
     jadwals.clear();
-    Future<String> data = fetchData();
-    data.then((value) {
-      Map json = jsonDecode(value);
-      for (var j in json['data']) {
-        Jadwal jad = Jadwal.fromJson(j);
-        jadwals.add(jad);
+    try {
+      final data = await fetchData();
+      Map<String, dynamic> json = jsonDecode(data);
+      if (json['data'] != null) {
+        List<dynamic> jsonData = json['data'];
+        jadwals = jsonData.map((item) => Jadwal.fromJson(item)).toList();
+        setState(() {
+          temp = jadwals.isNotEmpty ? jadwals[0].nama : ''; // Update temp
+        });
       }
-      // setState(() {
-      //   temp = jadwals[0].nama;
-      // });
-    });
+    } catch (error) {
+      print('Error fetching data: $error');
+      // Handle the error
+    }
   }
 
   Widget listJadwal(jadwals) {
@@ -124,6 +134,23 @@ class _CariState extends State<Cari> {
   }
 
   //list di dalam dialog
+  Future<List<Member>> getMember(int id_jadwal) async {
+    List<Member> members = [];
+    final response = await http.post(
+      Uri.parse(
+          "https://ubaya.me/flutter/160420033/dolanyuk_api/member_jadwal.php"),
+      body: {'id_jadwal': id_jadwal.toString()},
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> json = jsonDecode(response.body);
+      List<dynamic> data = json['data'];
+      members = data.map((item) => Member.fromJson(item)).toList();
+      return members;
+    } else {
+      throw Exception('Failed to read API');
+    }
+  }
+  
   Widget dialogList(List<Member> members) {
     var extra = "";
     return Container(
@@ -148,8 +175,7 @@ class _CariState extends State<Cari> {
       ),
     );
   }
-
-  //Dialog untuk show member
+  
   void showMember(int id_jadwal) {
     getMember(id_jadwal).then((members) {
       if (members.isNotEmpty) {
@@ -175,24 +201,6 @@ class _CariState extends State<Cari> {
     });
   }
 
-  //get member
-  Future<List<Member>> getMember(int id_jadwal) async {
-    List<Member> members = [];
-    final response = await http.post(
-      Uri.parse(
-          "https://ubaya.me/flutter/160420033/dolanyuk_api/member_jadwal.php"),
-      body: {'id_jadwal': id_jadwal.toString()},
-    );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> json = jsonDecode(response.body);
-      List<dynamic> data = json['data'];
-      members = data.map((item) => Member.fromJson(item)).toList();
-      return members;
-    } else {
-      throw Exception('Failed to read API');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -215,7 +223,8 @@ class _CariState extends State<Cari> {
                         borderRadius: BorderRadius.circular(10.0))),
                 onChanged: (v) {
                   setState(() {
-                    jadwals = [];
+                    cari = v;
+                    bacaData();
                   });
                 },
               )),

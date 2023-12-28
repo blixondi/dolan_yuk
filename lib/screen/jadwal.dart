@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:dolan_yuk/class/jadwal.dart';
+import 'package:dolan_yuk/class/member.dart';
 import 'package:dolan_yuk/screen/tambah_jadwal.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,7 +86,9 @@ class _JadwalState extends State<Jadwal_Screen> {
                   Text(jadwals[index].tanggal),
                   Text(jadwals[index].jam),
                   OutlinedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showMember(jadwals[index].id);
+                    },
                     child:
                         Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                       Icon(Icons.person),
@@ -127,6 +130,73 @@ class _JadwalState extends State<Jadwal_Screen> {
         ],
       );
     }
+  }
+
+Future<List<Member>> getMember(int id_jadwal) async {
+    List<Member> members = [];
+    final response = await http.post(
+      Uri.parse(
+          "https://ubaya.me/flutter/160420033/dolanyuk_api/member_jadwal.php"),
+      body: {'id_jadwal': id_jadwal.toString()},
+    );
+    if (response.statusCode == 200) {
+      Map<String, dynamic> json = jsonDecode(response.body);
+      List<dynamic> data = json['data'];
+      members = data.map((item) => Member.fromJson(item)).toList();
+      return members;
+    } else {
+      throw Exception('Failed to read API');
+    }
+  }
+  
+  Widget dialogList(List<Member> members) {
+    var extra = "";
+    return Container(
+      width: double.maxFinite,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: members.length,
+        itemBuilder: (BuildContext context, int index) {
+          if (members[index].id == user_id) {
+            extra = " (YOU)";
+          } else {
+            extra = "";
+          }
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(members[index].image),
+            ),
+            title: Text(members[index].nama + extra),
+            subtitle: Text(members[index].role),
+          );
+        },
+      ),
+    );
+  }
+
+  void showMember(int id_jadwal) {
+    getMember(id_jadwal).then((members) {
+      if (members.isNotEmpty) {
+        showDialog(
+          barrierDismissible: false,
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text("List Member"),
+            content: dialogList(members),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Keren'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        print('Members empty');
+      }
+    });
   }
 
   @override
