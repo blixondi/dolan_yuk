@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import 'package:dolan_yuk/class/member.dart';
-import 'package:dolan_yuk/screen/tambah_jadwal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 

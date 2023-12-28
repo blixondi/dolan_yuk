@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:dolan_yuk/class/jadwal.dart';
 import 'package:dolan_yuk/class/member.dart';
+import 'package:dolan_yuk/screen/chat_screen.dart';
 import 'package:dolan_yuk/screen/tambah_jadwal.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -127,7 +128,12 @@ class _JadwalState extends State<Jadwal_Screen> {
                       children: <Widget>[
                         Spacer(),
                         ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Chat_Screen(id_jadwal: jadwals[index].id)));
+                            },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
