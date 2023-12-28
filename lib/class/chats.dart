@@ -1,5 +1,4 @@
 class Chats {
-  int id;
   int user_id;
   int jadwal_id;
   String nama;
@@ -8,7 +7,6 @@ class Chats {
   String photo;
 
   Chats({
-    required this.id,
     required this.user_id,
     required this.jadwal_id,
     required this.nama,
@@ -18,7 +16,6 @@ class Chats {
   });
   factory Chats.fromJson(Map<String, dynamic> json) {
     return Chats(
-      id: json['id'] as int,
       user_id: json['user_id'] as int,
       jadwal_id: json['jadwal_id'] as int,
       nama: json['full_name'] as String,

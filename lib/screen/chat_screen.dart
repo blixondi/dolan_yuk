@@ -182,7 +182,6 @@ class _ChatState extends State<Chat_Screen> {
       setState(() {
         // bacaData();
         chats.add(Chats(
-            id: chats[chats.length - 1].id,
             user_id: user_id,
             jadwal_id: widget.id_jadwal,
             nama: nama_user,
