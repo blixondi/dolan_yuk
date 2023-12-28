@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+
 import 'package:dolan_yuk/class/jadwal.dart';
 import 'package:flutter/material.dart';
 
@@ -43,7 +45,7 @@ class _CariState extends State<Cari> {
     final response = await http.post(
         Uri.parse(
             "https://ubaya.me/flutter/160420033/dolanyuk_api/cari_jadwal.php"),
-        body: {'user_id': user_id.toString(), 'cari' : cari});
+        body: {'user_id': user_id.toString(), 'cari': cari});
     if (response.statusCode == 200) {
       return response.body;
     } else {
@@ -75,42 +77,76 @@ class _CariState extends State<Cari> {
           itemCount: jadwals.length,
           itemBuilder: (BuildContext cxt, int index) {
             return Card(
-                child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              clipBehavior: Clip.antiAliasWithSaveLayer,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    child: Image.network(jadwals[index].gambar),
+                    child: Image.network(
+                      jadwals[index].gambar,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      height: 160,
+                    ),
                   ),
-                  Text(jadwals[index].nama),
-                  Text(jadwals[index].tanggal),
-                  Text(jadwals[index].jam),
-                  OutlinedButton(
-                    onPressed: () {
-                      showMember(jadwals[index].id);
-                    },
-                    child:
-                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      Icon(Icons.person),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                          "${jadwals[index].currentMember} / ${jadwals[index].minimalMember} orang")
-                    ]),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(30, 10, 15, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          jadwals[index].nama,
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.bold),
+                        ),
+                        Text(jadwals[index].tanggal),
+                        Text(jadwals[index].jam),
+                        OutlinedButton(
+                          onPressed: () {
+                            showMember(jadwals[index].id);
+                          },
+                          child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(Icons.person),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                    "${jadwals[index].currentMember} / ${jadwals[index].minimalMember} orang")
+                              ]),
+                        ),
+                        Text(jadwals[index].lokasi),
+                        Text(jadwals[index].alamat),
+                      ],
+                    ),
                   ),
-                  Text(jadwals[index].lokasi),
-                  Text(jadwals[index].alamat),
-                  ElevatedButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[Icon(Icons.login), Text('Join')],
-                      ))
+                  Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 30, 10),
+                    child: Row(
+                      children: <Widget>[
+                        Spacer(),
+                        ElevatedButton(
+                            onPressed: () {},
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(Icons.chat_bubble),
+                                Text('Party Chat')
+                              ],
+                            ))
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 10,
+                  )
                 ],
               ),
-            ));
+            );
           });
     } else {
       return Column(
@@ -150,7 +186,7 @@ class _CariState extends State<Cari> {
       throw Exception('Failed to read API');
     }
   }
-  
+
   Widget dialogList(List<Member> members) {
     var extra = "";
     return Container(
@@ -160,7 +196,7 @@ class _CariState extends State<Cari> {
         itemCount: members.length,
         itemBuilder: (BuildContext context, int index) {
           if (members[index].id == user_id) {
-            extra = " (YOU)";
+            extra = " (You)";
           } else {
             extra = "";
           }
@@ -175,7 +211,7 @@ class _CariState extends State<Cari> {
       ),
     );
   }
-  
+
   void showMember(int id_jadwal) {
     getMember(id_jadwal).then((members) {
       if (members.isNotEmpty) {
@@ -183,14 +219,14 @@ class _CariState extends State<Cari> {
           barrierDismissible: false,
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: const Text("List Member"),
+            title: const Text("Konco Dolanan"),
             content: dialogList(members),
             actions: <Widget>[
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Keren'),
+                child: const Text('Keren!'),
               ),
             ],
           ),
@@ -204,42 +240,34 @@ class _CariState extends State<Cari> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => TambahJadwal()));
-          },
-          child: Icon(Icons.edit),
-          backgroundColor: Colors.deepOrange,
-        ),
         body: Column(children: [
-          Padding(
-              padding: EdgeInsets.all(10),
-              child: TextField(
-                decoration: InputDecoration(
-                    hintText: 'Cari Dolanan...',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10.0))),
-                onChanged: (v) {
-                  setState(() {
-                    cari = v;
-                    bacaData();
-                  });
-                },
-              )),
-          Expanded(
-            child: jadwals.isEmpty
-                ? Center(
-                    child: listJadwal(jadwals),
-                  )
-                : Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Container(
-                        height: MediaQuery.of(context).size.height,
-                        child: listJadwal(jadwals)),
-                  ),
-          )
-        ]));
+      Padding(
+          padding: EdgeInsets.all(10),
+          child: TextField(
+            decoration: InputDecoration(
+                hintText: 'Cari Dolanan...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0))),
+            onChanged: (v) {
+              setState(() {
+                cari = v;
+                bacaData();
+              });
+            },
+          )),
+      Expanded(
+        child: jadwals.isEmpty
+            ? Center(
+                child: listJadwal(jadwals),
+              )
+            : Padding(
+                padding: EdgeInsets.all(10),
+                child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    child: listJadwal(jadwals)),
+              ),
+      )
+    ]));
   }
 }

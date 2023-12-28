@@ -74,42 +74,79 @@ class _JadwalState extends State<Jadwal_Screen> {
           itemCount: jadwals.length,
           itemBuilder: (BuildContext cxt, int index) {
             return Card(
-                child: Padding(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+              clipBehavior: Clip.antiAliasWithSaveLayer,
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    child: Image.network(jadwals[index].gambar),
+                    child: Image.network(
+                      jadwals[index].gambar,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      height: 160,
+                    ),
                   ),
-                  Text(jadwals[index].nama),
-                  Text(jadwals[index].tanggal),
-                  Text(jadwals[index].jam),
-                  OutlinedButton(
-                    onPressed: () {
-                      showMember(jadwals[index].id);
-                    },
-                    child:
-                        Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
-                      Icon(Icons.person),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                          "${jadwals[index].currentMember} / ${jadwals[index].minimalMember} orang")
-                    ]),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(30, 10, 15, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          jadwals[index].nama,
+                          style: TextStyle(
+                              fontSize: 30, fontWeight: FontWeight.bold),
+                        ),
+                        Text(jadwals[index].tanggal),
+                        Text(jadwals[index].jam),
+                        OutlinedButton(
+                          onPressed: () {
+                            showMember(jadwals[index].id);
+                          },
+                          child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(Icons.person),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                    "${jadwals[index].currentMember} / ${jadwals[index].minimalMember} orang")
+                              ]),
+                        ),
+                        Text(jadwals[index].lokasi),
+                        Text(jadwals[index].alamat),
+                      ],
+                    ),
                   ),
-                  Text(jadwals[index].lokasi),
-                  Text(jadwals[index].alamat),
-                  ElevatedButton(
-                      onPressed: () {},
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[Icon(Icons.login), Text('Join')],
-                      ))
+                  Container(
+                    padding: EdgeInsets.fromLTRB(0, 10, 30, 10),
+                    child: Row(
+                      children: <Widget>[
+                        Spacer(),
+                        ElevatedButton(
+                            onPressed: () {},
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Icon(Icons.chat_bubble),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text('Party Chat')
+                              ],
+                            ))
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: 20,
+                  )
                 ],
               ),
-            ));
+            );
           });
     } else {
       return Column(
@@ -132,7 +169,7 @@ class _JadwalState extends State<Jadwal_Screen> {
     }
   }
 
-Future<List<Member>> getMember(int id_jadwal) async {
+  Future<List<Member>> getMember(int id_jadwal) async {
     List<Member> members = [];
     final response = await http.post(
       Uri.parse(
@@ -148,7 +185,7 @@ Future<List<Member>> getMember(int id_jadwal) async {
       throw Exception('Failed to read API');
     }
   }
-  
+
   Widget dialogList(List<Member> members) {
     var extra = "";
     return Container(
@@ -181,7 +218,7 @@ Future<List<Member>> getMember(int id_jadwal) async {
           barrierDismissible: false,
           context: context,
           builder: (BuildContext context) => AlertDialog(
-            title: const Text("List Member"),
+            title: const Text("Konco Dolanan"),
             content: dialogList(members),
             actions: <Widget>[
               TextButton(
@@ -212,7 +249,9 @@ Future<List<Member>> getMember(int id_jadwal) async {
       ),
       body: jadwals.isEmpty
           ? Center(
-              child: listJadwal(jadwals),
+              child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: listJadwal(jadwals)),
             )
           : Padding(
               padding: EdgeInsets.all(10),
