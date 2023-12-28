@@ -30,8 +30,8 @@ class Jadwal {
       lokasi: json['lokasi'] as String,
       alamat: json['alamat'] as String,
       gambar: json['gambar'] as String,
-      minimalMember: int.parse(json['minimal_member'].toString()),
-      currentMember: int.parse(json['currentMember'].toString()),
+      minimalMember: json['minimal_member'] as int,
+      currentMember: json['currentMember'] as int,
     );
   }
 }

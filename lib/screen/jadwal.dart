@@ -3,7 +3,6 @@
 import 'dart:convert';
 
 import 'package:dolan_yuk/class/jadwal.dart';
-import 'package:dolan_yuk/class/member.dart';
 import 'package:dolan_yuk/screen/tambah_jadwal.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,11 +21,15 @@ class _JadwalState extends State<Jadwal_Screen> {
   @override
   void initState() {
     super.initState();
-    getUserId();
-    bacaData();
+    fetchDataAndPopulateJadwals();
   }
 
-  void getUserId() async {
+  fetchDataAndPopulateJadwals() async {
+    await getUserId(); // Wait for user ID retrieval
+    await bacaData(); // Fetch data and populate jadwals list
+  }
+
+  getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       user_id = prefs.getInt("user_id") ?? 0;
@@ -35,9 +38,10 @@ class _JadwalState extends State<Jadwal_Screen> {
 
   Future<String> fetchData() async {
     final response = await http.post(
-        Uri.parse(
-            "https://ubaya.me/flutter/160420033/dolanyuk_api/cari_jadwal.php"),
-        body: {'user_id': user_id.toString()});
+      Uri.parse(
+          "https://ubaya.me/flutter/160420033/dolanyuk_api/get_jadwal.php"),
+      body: {'user_id': user_id.toString()},
+    );
     if (response.statusCode == 200) {
       return response.body;
     } else {
@@ -45,19 +49,22 @@ class _JadwalState extends State<Jadwal_Screen> {
     }
   }
 
-  bacaData() {
+  bacaData() async {
     jadwals.clear();
-    Future<String> data = fetchData();
-    data.then((value) {
-      Map json = jsonDecode(value);
-      for (var j in json['data']) {
-        Jadwal jad = Jadwal.fromJson(j);
-        jadwals.add(jad);
+    try {
+      final data = await fetchData();
+      Map<String, dynamic> json = jsonDecode(data);
+      if (json['data'] != null) {
+        List<dynamic> jsonData = json['data'];
+        jadwals = jsonData.map((item) => Jadwal.fromJson(item)).toList();
+        setState(() {
+          temp = jadwals.isNotEmpty ? jadwals[0].nama : ''; // Update temp
+        });
       }
-      setState(() {
-        temp = jadwals[0].nama;
-      });
-    });
+    } catch (error) {
+      print('Error fetching data: $error');
+      // Handle the error
+    }
   }
 
   Widget listJadwal(jadwals) {
@@ -78,9 +85,7 @@ class _JadwalState extends State<Jadwal_Screen> {
                   Text(jadwals[index].tanggal),
                   Text(jadwals[index].jam),
                   OutlinedButton(
-                    onPressed: () {
-                      showMember(jadwals[index].id);
-                    },
+                    onPressed: () {},
                     child:
                         Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
                       Icon(Icons.person),
@@ -123,93 +128,6 @@ class _JadwalState extends State<Jadwal_Screen> {
       );
     }
   }
-
-  //list di dalam dialog
-  Widget dialogList(List<Member> members) {
-    var extra = "";
-    return Container(
-      width: double.maxFinite,
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: members.length,
-        itemBuilder: (BuildContext context, int index) {
-          if (members[index].id == user_id) {
-            extra = " (YOU)";
-          } else {
-            extra = "";
-          }
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(members[index].image),
-            ),
-            title: Text(members[index].nama + extra),
-            subtitle: Text(members[index].role),
-          );
-        },
-      ),
-    );
-  }
-
-  //Dialog untuk show member
-  void showMember(int id_jadwal) {
-    getMember(id_jadwal).then((members) {
-      if (members.isNotEmpty) {
-        showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text("List Member"),
-            content: dialogList(members),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Keren'),
-              ),
-            ],
-          ),
-        );
-      } else {
-        print('Members empty');
-      }
-    });
-  }
-
-  //get member
-  Future<List<Member>> getMember(int id_jadwal) async {
-    List<Member> members = [];
-    final response = await http.post(
-      Uri.parse(
-          "https://ubaya.me/flutter/160420033/dolanyuk_api/member_jadwal.php"),
-      body: {'id_jadwal': id_jadwal.toString()},
-    );
-    if (response.statusCode == 200) {
-      Map<String, dynamic> json = jsonDecode(response.body);
-      List<dynamic> data = json['data'];
-      members = data.map((item) => Member.fromJson(item)).toList();
-      return members;
-    } else {
-      throw Exception('Failed to read API');
-    }
-  }
-
-  // bacadata member
-  // bacaDataMember(int id_jadwal) {
-  //   members.clear();
-  //   Future<String> data = getMember(id_jadwal);
-  //   data.then((value) {
-  //     Map json = jsonDecode(value);
-  //     for (var m in json['data']) {
-  //       Member mem = Member.fromJson(m);
-  //       members.add(mem);
-  //       print(members);
-  //     }
-  //   });
-  //   setState(() {
-  //     print(members);
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {

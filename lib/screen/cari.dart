@@ -53,9 +53,9 @@ class _CariState extends State<Cari> {
         Jadwal jad = Jadwal.fromJson(j);
         jadwals.add(jad);
       }
-      setState(() {
-        temp = jadwals[0].nama;
-      });
+      // setState(() {
+      //   temp = jadwals[0].nama;
+      // });
     });
   }
 
