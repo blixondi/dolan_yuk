@@ -134,8 +134,8 @@ class _CariState extends State<Cari> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
-                                Icon(Icons.chat_bubble),
-                                Text('Party Chat')
+                                Icon(Icons.login),
+                                Text('Join')
                               ],
                             ))
                       ],
