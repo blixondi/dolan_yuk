@@ -70,6 +70,43 @@ class _CariState extends State<Cari> {
     }
   }
 
+  void joinDolanan(int jadwal_id) async {
+    final response = await http.post(
+        Uri.parse(
+            "https://ubaya.me/flutter/160420033/dolanyuk_api/enroll_user.php"),
+        body: {
+          'user_id': user_id.toString(),
+          'jadwal_id': jadwal_id.toString(),
+          'role': "Member",
+        });
+    if (response.statusCode == 200) {
+      Map json = jsonDecode(response.body);
+      if (json['result'] == "success") {
+        if (mounted) {
+          showDialog<String>(
+              barrierDismissible: false,
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                    title: Text(
+                      'Sukses Join!',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    content: Text(
+                        'Selamat, kamu berhasil join pada jadwal dolanan. Kamu bisa ngobrol bareng dengan teman-temanmu. Teman-temanmu menghargai komitmenmu untuk hadir dan bermain bersama!'),
+                    actions: <Widget>[
+                      ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            bacaData();
+                          },
+                          child: Text('OK')),
+                    ],
+                  ));
+        }
+      }
+    }
+  }
+
   Widget listJadwal(jadwals) {
     if (jadwals.isNotEmpty) {
       return ListView.builder(
@@ -129,7 +166,33 @@ class _CariState extends State<Cari> {
                       children: <Widget>[
                         Spacer(),
                         ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              if (jadwals[index].currentMember ==
+                                  jadwals[index].minimalMember) {
+                                showDialog<String>(
+                                    barrierDismissible: false,
+                                    context: context,
+                                    builder: (BuildContext context) =>
+                                        AlertDialog(
+                                          title: Text(
+                                            'Jadwal penuh',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          content: Text(
+                                              'Sorry banget nih, jadwal yang ini sudah penuh :( Cari permainan lain ya'),
+                                          actions: <Widget>[
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: Text('OK')),
+                                          ],
+                                        ));
+                              } else {
+                                joinDolanan(jadwals[index].id);
+                              }
+                            },
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
