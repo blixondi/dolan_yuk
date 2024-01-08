@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:dolan_yuk/main.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Profiles extends StatefulWidget {
   @override
@@ -13,6 +15,7 @@ class _ProfilesState extends State<Profiles> {
   final TextEditingController full_name_cont = TextEditingController();
   final TextEditingController email_cont = TextEditingController();
   final TextEditingController user_image_cont = TextEditingController();
+  File? gambar = null;
 
   @override
   void initState() {
@@ -58,8 +61,13 @@ class _ProfilesState extends State<Profiles> {
 
   Future<void> UpdateUser() async {
     final response = await http.post(
-        Uri.parse("https://ubaya.me/flutter/160420033/dolanyuk_api/update_user.php"),
-        body: {'full_name': full_name_cont.text.toString(), 'user_image': user_image_cont.text.toString(), 'id': activeUserId.toString()});
+        Uri.parse(
+            "https://ubaya.me/flutter/160420033/dolanyuk_api/update_user.php"),
+        body: {
+          'full_name': full_name_cont.text.toString(),
+          'user_image': user_image_cont.text.toString(),
+          'id': activeUserId.toString()
+        });
     if (response.statusCode == 200) {
       Map json = jsonDecode(response.body);
       if (json['result'] == 'success') {
@@ -73,6 +81,40 @@ class _ProfilesState extends State<Profiles> {
     } else {
       throw Exception('Failed to read API');
     }
+  }
+
+// Fungsi untuk mengambil foto dari galeri
+  Future GetImageFromGallery() async {
+    final ambil = ImagePicker();
+    final filediambil = await ambil.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (filediambil != null) {
+        gambar = File(filediambil.path);
+        setState(() {
+          user_image_cont.text = gambar!.path;
+        });
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
+  // Fungsi untuk mengambil foto dari kamera
+  Future GetImageFromCamera() async {
+    final ambil = ImagePicker();
+    final filediambil = await ambil.getImage(source: ImageSource.camera);
+
+    setState(() {
+      if (filediambil != null) {
+        gambar = File(filediambil.path);
+        setState(() {
+          user_image_cont.text = gambar!.path;
+        });
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 
   @override
@@ -117,12 +159,26 @@ class _ProfilesState extends State<Profiles> {
                   },
                 ),
                 const SizedBox(height: 20),
+                ElevatedButton(
+                    onPressed: () {
+                      GetImageFromCamera();
+                    },
+                    child: const Text("Ambil Foto")),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                    onPressed: () {
+                      GetImageFromGallery();
+                    },
+                    child: const Text("Ambil Dari Gallery")),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    ElevatedButton(onPressed: () {
-                      UpdateUser();
-                    }, child: const Text("Submit"))
+                    ElevatedButton(
+                        onPressed: () {
+                          UpdateUser();
+                        },
+                        child: const Text("Submit"))
                   ],
                 ),
               ],
