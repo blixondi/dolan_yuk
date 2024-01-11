@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dolan_yuk/main.dart';
@@ -94,6 +95,9 @@ class _ProfilesState extends State<Profiles> {
         final prefs = await SharedPreferences.getInstance();
         prefs.setString("full_name", full_name_cont.text);
         prefs.setString("user_image", user_image_cont.text);
+        setState(() {
+          activePhoto = user_image_cont.text;
+        });
       } else {
         print("Update User Failed: ${json['message']}");
       }
