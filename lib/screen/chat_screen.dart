@@ -124,7 +124,7 @@ class _ChatState extends State<Chat_Screen> {
             Container(
               margin: const EdgeInsets.only(right: 16.0, left: 16.0),
               child: CircleAvatar(
-                child: Image(image: NetworkImage(chats[index].photo)),
+                backgroundImage: NetworkImage(chats[index].photo),
               ),
             ),
           Expanded(
@@ -159,7 +159,7 @@ class _ChatState extends State<Chat_Screen> {
             Container(
               margin: const EdgeInsets.only(right: 16.0, left: 16.0),
               child: CircleAvatar(
-                child: Image(image: NetworkImage(chats[index].photo)),
+                backgroundImage: NetworkImage(chats[index].photo),
               ),
             ),
         ],
