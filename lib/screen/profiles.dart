@@ -60,6 +60,25 @@ class _ProfilesState extends State<Profiles> {
   }
 
   Future<void> UpdateUser() async {
+    if (gambar != null) {
+      List<int> imageBytes = gambar!.readAsBytesSync();
+      String base64Image = base64Encode(imageBytes);
+      final response2 = await http.post(
+          Uri.parse(
+              "https://ubaya.me/flutter/160420033/upload_profile_image.php"),
+          body: {'user_id': activeUserId.toString(), 'image': base64Image});
+      print('Upload Image Response: ${response2.body}');
+      if (response2.statusCode == 200) {
+        Map json2 = jsonDecode(response2.body);
+        setState(() {
+          user_image_cont.text =
+              "https://ubaya.me/flutter/160420033/dolanyuk_images/${json2['message'].toString()}";
+        });
+      } else {
+        print('Image Upload Failed: ${response2.statusCode}');
+      }
+    }
+
     final response = await http.post(
         Uri.parse(
             "https://ubaya.me/flutter/160420033/dolanyuk_api/update_user.php"),
@@ -68,17 +87,18 @@ class _ProfilesState extends State<Profiles> {
           'user_image': user_image_cont.text.toString(),
           'id': activeUserId.toString()
         });
+    print('Update User Response: ${response.body}');
     if (response.statusCode == 200) {
       Map json = jsonDecode(response.body);
       if (json['result'] == 'success') {
-        print("berhasil");
         final prefs = await SharedPreferences.getInstance();
         prefs.setString("full_name", full_name_cont.text);
         prefs.setString("user_image", user_image_cont.text);
       } else {
-        print("gagal");
+        print("Update User Failed: ${json['message']}");
       }
     } else {
+      print('Update User Failed: ${response.statusCode}');
       throw Exception('Failed to read API');
     }
   }
@@ -86,7 +106,10 @@ class _ProfilesState extends State<Profiles> {
 // Fungsi untuk mengambil foto dari galeri
   Future GetImageFromGallery() async {
     final ambil = ImagePicker();
-    final filediambil = await ambil.getImage(source: ImageSource.gallery);
+    final filediambil = await ambil.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
 
     setState(() {
       if (filediambil != null) {
@@ -103,7 +126,8 @@ class _ProfilesState extends State<Profiles> {
   // Fungsi untuk mengambil foto dari kamera
   Future GetImageFromCamera() async {
     final ambil = ImagePicker();
-    final filediambil = await ambil.getImage(source: ImageSource.camera);
+    final filediambil =
+        await ambil.pickImage(source: ImageSource.camera, imageQuality: 20);
 
     setState(() {
       if (filediambil != null) {
@@ -120,68 +144,77 @@ class _ProfilesState extends State<Profiles> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('Profiles'),
-        ),
         body: Container(
             margin: const EdgeInsets.only(left: 15, right: 15),
             child: Center(
-                child: Column(
-              children: [
-                CircleAvatar(
-                    backgroundImage: NetworkImage(user_image_cont.text),
-                    radius: 100),
-                const SizedBox(height: 20),
-                TextField(
-                  decoration: const InputDecoration(
-                      border: UnderlineInputBorder(), labelText: 'Full Name'),
-                  controller: full_name_cont,
-                  onChanged: (v) {
-                    print(full_name_cont.text);
-                  },
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  decoration: const InputDecoration(
-                      border: UnderlineInputBorder(), labelText: 'Email'),
-                  controller: email_cont,
-                  enabled: false,
-                ),
-                const SizedBox(height: 20),
-                TextField(
-                  decoration: const InputDecoration(
-                      border: UnderlineInputBorder(), labelText: 'Photo URL'),
-                  controller: user_image_cont,
-                  onSubmitted: (v) {
-                    setState(() {
-                      user_image_cont.text = v;
-                    });
-                  },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                    onPressed: () {
-                      GetImageFromCamera();
+                child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  gambar != null
+                      ? CircleAvatar(
+                          backgroundImage: FileImage(gambar!),
+                          radius: 100,
+                        )
+                      : CircleAvatar(
+                          backgroundImage: NetworkImage(user_image_cont.text),
+                          radius: 100),
+                  const SizedBox(height: 20),
+                  TextField(
+                    decoration: const InputDecoration(
+                        border: UnderlineInputBorder(), labelText: 'Full Name'),
+                    controller: full_name_cont,
+                    onChanged: (v) {
+                      print(full_name_cont.text);
                     },
-                    child: const Text("Ambil Foto")),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                    onPressed: () {
-                      GetImageFromGallery();
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    decoration: const InputDecoration(
+                        border: UnderlineInputBorder(), labelText: 'Email'),
+                    controller: email_cont,
+                    enabled: false,
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    decoration: const InputDecoration(
+                        border: UnderlineInputBorder(), labelText: 'Photo URL'),
+                    controller: user_image_cont,
+                    onSubmitted: (v) {
+                      setState(() {
+                        user_image_cont.text = v;
+                      });
                     },
-                    child: const Text("Ambil Dari Gallery")),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    ElevatedButton(
-                        onPressed: () {
-                          UpdateUser();
-                        },
-                        child: const Text("Submit"))
-                  ],
-                ),
-              ],
+                    onChanged: (v) {
+                      setState(() {
+                        user_image_cont.text = v;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                      onPressed: () {
+                        GetImageFromCamera();
+                      },
+                      child: const Text("Ambil Foto")),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                      onPressed: () {
+                        GetImageFromGallery();
+                      },
+                      child: const Text("Ambil Dari Gallery")),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            UpdateUser();
+                          },
+                          child: const Text("Submit"))
+                    ],
+                  ),
+                ],
+              ),
             ))));
   }
 }
